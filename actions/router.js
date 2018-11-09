@@ -26,14 +26,14 @@ router.get('/:id', async (req, res) => {
 router.post('/create', async (req, res) => {
     try {
         const { body } = req;
-        if (!body.project_id || !body.description) {
-            res.status(400).json({message: 'Project Id and Description required'})
+        if (!body.project_id || !body.description || !body.notes) {
+            res.status(400).json({message: 'project id, description, notes are required'})
         }
-        const actionId = await actionsDb.insert(req.body)
-        res.status(201).json(actionId);
+        const action = await actionsDb.insert(body)
+        res.status(201).json(action);
     } catch(error) {
         error.errno === 19 ?
-            res.status(406).json('action already exists')
+            res.status(406).json({message: 'error creating action', error})
             :res.status(500).json(error);
     }
 });
@@ -44,8 +44,8 @@ router.delete('/delete/:id', async (req, res) => {
         const count = await actionsDb.remove(id);
         
         count
-            ? res.status(200).json({message: `${count} post's deleted`})
-            : res.status(404).json({message: 'post not found'})
+            ? res.status(200).json({message: `${count} action's deleted`})
+            : res.status(404).json({message: 'action not found'})
     } catch(error) {
         res.status.apply(500).json(error);
     }
@@ -54,14 +54,20 @@ router.delete('/delete/:id', async (req, res) => {
 router.put('/edit/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const count = await actionsDb.update(id, req.body);
+        const { body } = req;
 
-        count
-            ? res.status(200).json({message: `${count} post's edited`})
-            : res.status(404).json({message: 'post not found'})
+        if (!body.notes && !body.description && body.completed !== null) {
+            res.status(400).json({message: 'description, notes or completed required'})
+        }
+
+        const updatedProject = await actionsDb.update(id, body);
+
+        updatedProject
+            ? res.status(200).json(updatedProject)
+            : res.status(404).json({message: 'project not found'})
 
     } catch(error) {
-        res.status.apply(500).json(error);
+        res.status(500).json(error);
     }
 })
 

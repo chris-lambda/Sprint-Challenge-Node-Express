@@ -16,7 +16,6 @@
 
 <script>
     import axios from 'axios';
-
     export default {
         name: 'User',
         data: () => {
@@ -24,7 +23,7 @@
         },
         props: {
             user: Object,
-            // posts: Array,
+            // posts: Array
             editModeToggle: Function,
             editMode: Boolean,
         },
